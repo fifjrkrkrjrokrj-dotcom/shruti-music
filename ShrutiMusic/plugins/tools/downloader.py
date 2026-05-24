@@ -3313,7 +3313,7 @@ async def video_downloader(_, message: Message):
 
 
 from pyrogram import filters
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, InputMediaVideo
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from ShrutiMusic import app
 
 REPO_VIDEO = "https://files.catbox.moe/aoafwn.mp4"
@@ -3323,16 +3323,21 @@ async def send_repo(_, message: Message):
     await message.reply_video(
         video=REPO_VIDEO,
         caption=(
-            caption=(
-            "<b>✨ ʜᴇʏ ᴅᴇᴀʀ, ʜᴇʀᴇ ɪꜱ ᴛʜᴇ ᴏꜰꜰɪᴄɪᴀʟ ʀᴇᴘᴏꜱɪᴛᴏʀʏ �ᴏꜰ ᴛʜɪꜱ ʙᴏᴛ ✨</b>\n\n"
-            "🔗 �ᴏɴ'ᴛ ꜰᴏʀɢᴇᴛ ᴛᴏ ɢɪᴠᴇ ᴀ ꜱᴛᴀʀ 🌟 ᴀɴᴅ ꜰᴏʟʟᴏᴡ!\n\n"
+            "<b>✨ ʜᴇʏ ᴅᴇᴀʀ, ʜᴇʀᴇ ɪꜱ ᴛʜᴇ ᴏꜰꜰɪᴄɪᴀʟ ʀᴇᴘᴏꜱɪᴛᴏʀʏ ᴏꜰ ᴛʜɪꜱ ʙᴏᴛ ✨</b>\n\n"
+            "🔗 ᴅᴏɴ'ᴛ ꜰᴏʀɢᴇᴛ ᴛᴏ ɢɪᴠᴇ ᴀ ꜱᴛᴀʀ 🌟 ᴀɴᴅ ꜰᴏʟʟᴏᴡ!\n\n"
             "🧡 ᴄʀᴇᴅɪᴛꜱ : <a href='https://t.me/Katillll'>@Katillll</a>"
         ),
         reply_markup=InlineKeyboardMarkup(
             [
                 [
-                    InlineKeyboardButton("👑 Owner", url="https://t.me/Katillll"),
-                    InlineKeyboardButton("💸 Buy Now", url="https://t.me/Katillll")
+                    InlineKeyboardButton(
+                        "👑 Owner",
+                        url="https://t.me/Katillll"
+                    ),
+                    InlineKeyboardButton(
+                        "💸 Buy Now",
+                        url="https://t.me/Katillll"
+                    )
                 ]
             ]
         ),
