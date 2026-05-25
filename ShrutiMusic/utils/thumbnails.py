@@ -1,7 +1,3 @@
-# =========================
-# FIXED PREMIUM THUMBNAIL
-# =========================
-
 import os
 import aiohttp
 import aiofiles
@@ -28,11 +24,11 @@ CACHE_DIR = Path("cache")
 CACHE_DIR.mkdir(exist_ok=True)
 
 # =========================
-# SIZE
+# 4K SIZE
 # =========================
 
-CANVAS_W = 1280
-CANVAS_H = 720
+CANVAS_W = 3840
+CANVAS_H = 2160
 
 # =========================
 # FONTS
@@ -40,6 +36,8 @@ CANVAS_H = 720
 
 FONT_BOLD = "ShrutiMusic/assets/font3.ttf"
 FONT_REGULAR = "ShrutiMusic/assets/font2.ttf"
+
+BOT_NAME = "𝐊𝐀𝐓𝐈𝐋 𝐌𝐔𝐒𝐈𝐂 🎧"
 
 # =========================
 # THUMB GENERATOR
@@ -50,7 +48,7 @@ async def gen_thumb(videoid: str):
     try:
 
         # =========================
-        # FETCH YOUTUBE DATA
+        # YOUTUBE DATA
         # =========================
 
         url = f"https://www.youtube.com/watch?v={videoid}"
@@ -59,14 +57,25 @@ async def gen_thumb(videoid: str):
 
         result = (await results.next())["result"][0]
 
-        title = result.get(
+        raw_title = result.get(
             "title",
             "Unknown Song"
-        )[:28]
+        )
+
+        title = raw_title.replace(
+            "https://youtu.be/",
+            ""
+        ).replace(
+            "|",
+            ""
+        ).replace(
+            "@",
+            ""
+        )[:20]
 
         duration = result.get(
             "duration",
-            "2:30"
+            "3:20"
         )
 
         views = result.get(
@@ -125,23 +134,23 @@ async def gen_thumb(videoid: str):
         )
 
         bg = bg.filter(
-            ImageFilter.GaussianBlur(30)
+            ImageFilter.GaussianBlur(35)
         )
 
         bg = ImageEnhance.Brightness(
             bg
-        ).enhance(0.22)
+        ).enhance(0.18)
 
         canvas = bg.convert("RGBA")
 
         # =========================
-        # RED DARK OVERLAY
+        # DARK OVERLAY
         # =========================
 
         overlay = Image.new(
             "RGBA",
             (CANVAS_W, CANVAS_H),
-            (25, 0, 0, 160)
+            (20, 0, 0, 180)
         )
 
         canvas = Image.alpha_composite(
@@ -155,10 +164,10 @@ async def gen_thumb(videoid: str):
         # PLAYER BOX
         # =========================
 
-        box_x = 70
-        box_y = 40
-        box_w = 1140
-        box_h = 420
+        box_x = 180
+        box_y = 100
+        box_w = 3480
+        box_h = 1180
 
         draw.rounded_rectangle(
             (
@@ -167,20 +176,20 @@ async def gen_thumb(videoid: str):
                 box_x + box_w,
                 box_y + box_h
             ),
-            radius=10,
+            radius=20,
             fill=(255, 255, 255, 70),
-            outline=(255, 220, 220),
-            width=3
+            outline=(255, 255, 255),
+            width=6
         )
 
         # =========================
-        # THUMB IMAGE
+        # THUMB
         # =========================
 
-        thumb = base.resize((620, 360))
+        thumb = base.resize((1900, 980))
 
-        thumb_x = 330
-        thumb_y = 50
+        thumb_x = 970
+        thumb_y = 130
 
         canvas.paste(
             thumb,
@@ -193,15 +202,15 @@ async def gen_thumb(videoid: str):
 
         fade = Image.new(
             "RGBA",
-            (box_w, 150),
+            (box_w, 350),
             (0, 0, 0, 0)
         )
 
         fd = ImageDraw.Draw(fade)
 
-        for y in range(150):
+        for y in range(350):
 
-            alpha = int((y / 150) * 255)
+            alpha = int((y / 350) * 255)
 
             fd.line(
                 [(0, y), (box_w, y)],
@@ -210,7 +219,7 @@ async def gen_thumb(videoid: str):
 
         canvas.paste(
             fade,
-            (box_x, box_y + 270),
+            (box_x, box_y + 830),
             fade
         )
 
@@ -218,23 +227,23 @@ async def gen_thumb(videoid: str):
         # CORNERS
         # =========================
 
-        c = (255, 220, 220)
+        c = (255, 255, 255)
 
-        # top left
-        draw.line([(70, 40), (110, 40)], fill=c, width=4)
-        draw.line([(70, 40), (70, 80)], fill=c, width=4)
+        # TL
+        draw.line([(180, 100), (300, 100)], fill=c, width=8)
+        draw.line([(180, 100), (180, 220)], fill=c, width=8)
 
-        # top right
-        draw.line([(1210, 40), (1170, 40)], fill=c, width=4)
-        draw.line([(1210, 40), (1210, 80)], fill=c, width=4)
+        # TR
+        draw.line([(3660, 100), (3540, 100)], fill=c, width=8)
+        draw.line([(3660, 100), (3660, 220)], fill=c, width=8)
 
-        # bottom left
-        draw.line([(70, 460), (110, 460)], fill=c, width=4)
-        draw.line([(70, 460), (70, 420)], fill=c, width=4)
+        # BL
+        draw.line([(180, 1280), (300, 1280)], fill=c, width=8)
+        draw.line([(180, 1280), (180, 1160)], fill=c, width=8)
 
-        # bottom right
-        draw.line([(1210, 460), (1170, 460)], fill=c, width=4)
-        draw.line([(1210, 460), (1210, 420)], fill=c, width=4)
+        # BR
+        draw.line([(3660, 1280), (3540, 1280)], fill=c, width=8)
+        draw.line([(3660, 1280), (3660, 1160)], fill=c, width=8)
 
         # =========================
         # FONTS
@@ -242,60 +251,64 @@ async def gen_thumb(videoid: str):
 
         title_font = ImageFont.truetype(
             FONT_BOLD,
-            54
+            150
         )
 
         medium_font = ImageFont.truetype(
             FONT_BOLD,
-            30
+            75
         )
 
         small_font = ImageFont.truetype(
             FONT_REGULAR,
-            24
+            58
         )
 
         # =========================
-        # BOTTOM INFO
+        # ARTIST
         # =========================
 
         draw.text(
-            (100, 365),
+            (300, 980),
             "Artist",
             font=small_font,
-            fill=(220, 220, 220)
+            fill=(230, 230, 230)
         )
 
         draw.text(
-            (100, 405),
-            channel[:15],
+            (300, 1060),
+            channel[:20],
             font=medium_font,
             fill="white"
         )
 
+        # =========================
+        # VIEWS
+        # =========================
+
         draw.text(
-            (560, 365),
+            (1650, 980),
             "Views",
             font=small_font,
-            fill=(220, 220, 220)
+            fill=(230, 230, 230)
         )
 
         draw.text(
-            (560, 405),
+            (1650, 1060),
             f"{views} views",
             font=medium_font,
             fill="white"
         )
 
         # =========================
-        # YOUR BOT NAME
+        # BOT NAME
         # =========================
 
         draw.text(
-            (930, 395),
-            "𝐊𝐀𝐓𝐈𝐋 𝐌𝐔𝐒𝐈𝐂 🎧",
+            (2820, 1040),
+            BOT_NAME,
             font=medium_font,
-            fill=(255, 220, 220)
+            fill="white"
         )
 
         # =========================
@@ -310,58 +323,58 @@ async def gen_thumb(videoid: str):
         draw.text(
             (
                 (CANVAS_W - title_width) / 2,
-                500
+                1500
             ),
             title,
             font=title_font,
-            fill=(90, 0, 0)
+            fill="white"
         )
 
         # =========================
         # WAVEFORM
         # =========================
 
-        wave_y = 575
+        wave_y = 1740
 
-        for x in range(100, 1130, 10):
+        for x in range(300, 3400, 20):
 
-            h = random.randint(8, 40)
+            h = random.randint(20, 120)
 
             draw.line(
                 [
                     (x, wave_y - h // 2),
                     (x, wave_y + h // 2)
                 ],
-                fill=(120, 0, 0),
-                width=4
+                fill=(255, 255, 255),
+                width=8
             )
 
         # =========================
         # PROGRESS BAR
         # =========================
 
-        line_y = 630
+        line_y = 1890
 
         draw.line(
-            [(100, line_y), (1150, line_y)],
-            fill=(80, 30, 30),
-            width=6
+            [(300, line_y), (3450, line_y)],
+            fill=(120, 120, 120),
+            width=14
         )
 
         draw.line(
-            [(100, line_y), (420, line_y)],
-            fill=(255, 0, 0),
-            width=7
+            [(300, line_y), (1250, line_y)],
+            fill=(255, 255, 255),
+            width=16
         )
 
         draw.ellipse(
             (
-                410,
-                line_y - 10,
-                430,
-                line_y + 10
+                1220,
+                line_y - 22,
+                1270,
+                line_y + 22
             ),
-            fill=(255, 0, 0)
+            fill="white"
         )
 
         # =========================
@@ -369,17 +382,17 @@ async def gen_thumb(videoid: str):
         # =========================
 
         draw.text(
-            (100, 650),
+            (300, 1940),
             "00:00",
             font=small_font,
-            fill=(70, 0, 0)
+            fill="white"
         )
 
         draw.text(
-            (1110, 650),
+            (3300, 1940),
             duration,
             font=small_font,
-            fill=(70, 0, 0)
+            fill="white"
         )
 
         # =========================
@@ -387,24 +400,24 @@ async def gen_thumb(videoid: str):
         # =========================
 
         draw.text(
-            (520, 675),
+            (1500, 2010),
             "◀",
             font=title_font,
-            fill=(60, 0, 0)
+            fill="white"
         )
 
         draw.text(
-            (610, 665),
+            (1800, 1980),
             "⏸",
             font=title_font,
-            fill=(60, 0, 0)
+            fill="white"
         )
 
         draw.text(
-            (720, 675),
+            (2150, 2010),
             "▶",
             font=title_font,
-            fill=(60, 0, 0)
+            fill="white"
         )
 
         # =========================
@@ -412,19 +425,22 @@ async def gen_thumb(videoid: str):
         # =========================
 
         draw.text(
-            (470, 730),
+            (1450, 2100),
             "Requested by : KATIL",
             font=medium_font,
-            fill=(60, 0, 0)
+            fill="white"
         )
 
         # =========================
         # SAVE
         # =========================
 
-        output = CACHE_DIR / f"{videoid}_final.png"
+        output = CACHE_DIR / f"{videoid}_4k.png"
 
-        canvas.save(output)
+        canvas.save(
+            output,
+            quality=100
+        )
 
         # =========================
         # DELETE TEMP
