@@ -1,11 +1,11 @@
-# Copyright (c) 2025 Nand Yaduwanshi <NoxxOP>
-
 import os
 import aiohttp
 import aiofiles
 import traceback
+import random
 
 from pathlib import Path
+
 from PIL import (
     Image,
     ImageDraw,
@@ -16,38 +16,38 @@ from PIL import (
 
 from py_yt import VideosSearch
 
-# ======================
+# =========================
 # CACHE
-# ======================
+# =========================
 
 CACHE_DIR = Path("cache")
 CACHE_DIR.mkdir(exist_ok=True)
 
-# ======================
-# SIZE
-# ======================
+# =========================
+# CANVAS SIZE
+# =========================
 
 CANVAS_W = 1280
 CANVAS_H = 720
 
-# ======================
+# =========================
 # FONTS
-# ======================
+# =========================
 
 FONT_BOLD = "ShrutiMusic/assets/font3.ttf"
 FONT_REGULAR = "ShrutiMusic/assets/font2.ttf"
 
-# ======================
-# THUMBNAIL GENERATOR
-# ======================
+# =========================
+# THUMB GENERATOR
+# =========================
 
 async def gen_thumb(videoid: str):
 
     try:
 
-        # ======================
-        # YOUTUBE DETAILS
-        # ======================
+        # =========================
+        # FETCH YOUTUBE DATA
+        # =========================
 
         url = f"https://www.youtube.com/watch?v={videoid}"
 
@@ -57,12 +57,12 @@ async def gen_thumb(videoid: str):
 
         title = result.get(
             "title",
-            "Unknown Song"
-        )[:30]
+            "Bairan"
+        )[:20]
 
         duration = result.get(
             "duration",
-            "2:30"
+            "2:31"
         )
 
         views = result.get(
@@ -70,14 +70,22 @@ async def gen_thumb(videoid: str):
             {}
         ).get(
             "short",
-            "60K"
+            "60.2M"
+        )
+
+        channel = result.get(
+            "channel",
+            {}
+        ).get(
+            "name",
+            "Banjaare"
         )
 
         thumburl = result["thumbnails"][0]["url"].split("?")[0]
 
-        # ======================
+        # =========================
         # DOWNLOAD THUMB
-        # ======================
+        # =========================
 
         thumb_path = CACHE_DIR / f"{videoid}.jpg"
 
@@ -96,220 +104,323 @@ async def gen_thumb(videoid: str):
                             await resp.read()
                         )
 
-        # ======================
+        # =========================
         # OPEN IMAGE
-        # ======================
+        # =========================
 
         base = Image.open(
             thumb_path
         ).convert("RGB")
 
-        # ======================
+        # =========================
         # BACKGROUND
-        # ======================
+        # =========================
 
         bg = base.resize(
             (CANVAS_W, CANVAS_H)
         )
 
         bg = bg.filter(
-            ImageFilter.GaussianBlur(18)
+            ImageFilter.GaussianBlur(25)
         )
 
         bg = ImageEnhance.Brightness(
             bg
-        ).enhance(0.45)
+        ).enhance(0.30)
 
         canvas = bg.convert("RGBA")
 
-        # ======================
-        # GLASS CARD
-        # ======================
+        # =========================
+        # RED OVERLAY
+        # =========================
 
-        overlay = Image.new(
+        red = Image.new(
             "RGBA",
             (CANVAS_W, CANVAS_H),
-            (0, 0, 0, 0)
-        )
-
-        odraw = ImageDraw.Draw(overlay)
-
-        card_x = 260
-        card_y = 120
-        card_w = 760
-        card_h = 480
-
-        odraw.rounded_rectangle(
-            (
-                card_x,
-                card_y,
-                card_x + card_w,
-                card_y + card_h
-            ),
-            radius=35,
-            fill=(255, 255, 255, 180)
-        )
-
-        overlay = overlay.filter(
-            ImageFilter.GaussianBlur(2)
+            (35, 0, 0, 130)
         )
 
         canvas = Image.alpha_composite(
             canvas,
-            overlay
+            red
         )
 
         draw = ImageDraw.Draw(canvas)
 
-        # ======================
-        # THUMB IMAGE
-        # ======================
+        # =========================
+        # MAIN PLAYER BOX
+        # =========================
 
-        thumb = base.resize((540, 240))
+        box_x = 70
+        box_y = 40
+        box_w = 1140
+        box_h = 420
 
-        mask = Image.new(
-            "L",
-            thumb.size,
-            0
-        )
-
-        mdraw = ImageDraw.Draw(mask)
-
-        mdraw.rounded_rectangle(
+        draw.rounded_rectangle(
             (
-                0,
-                0,
-                thumb.size[0],
-                thumb.size[1]
+                box_x,
+                box_y,
+                box_x + box_w,
+                box_y + box_h
             ),
-            radius=22,
-            fill=255
+            radius=8,
+            fill=(20, 0, 0, 100),
+            outline=(255, 220, 220),
+            width=3
         )
 
-        thumb_x = card_x + 110
-        thumb_y = card_y + 40
+        # =========================
+        # THUMB IMAGE
+        # =========================
+
+        thumb = base.resize((620, 360))
+
+        thumb_x = 330
+        thumb_y = 50
 
         canvas.paste(
             thumb,
-            (thumb_x, thumb_y),
-            mask
+            (thumb_x, thumb_y)
         )
 
-        # ======================
+        # =========================
+        # BLACK FADE
+        # =========================
+
+        fade = Image.new(
+            "RGBA",
+            (box_w, 140),
+            (0, 0, 0, 0)
+        )
+
+        fd = ImageDraw.Draw(fade)
+
+        for y in range(140):
+
+            alpha = int((y / 140) * 240)
+
+            fd.line(
+                [(0, y), (box_w, y)],
+                fill=(0, 0, 0, alpha)
+            )
+
+        canvas.paste(
+            fade,
+            (box_x, box_y + 280),
+            fade
+        )
+
+        # =========================
+        # CORNER LINES
+        # =========================
+
+        c = (255, 220, 220)
+
+        # top left
+        draw.line([(70, 40), (110, 40)], fill=c, width=4)
+        draw.line([(70, 40), (70, 80)], fill=c, width=4)
+
+        # top right
+        draw.line([(1210, 40), (1170, 40)], fill=c, width=4)
+        draw.line([(1210, 40), (1210, 80)], fill=c, width=4)
+
+        # bottom left
+        draw.line([(70, 460), (110, 460)], fill=c, width=4)
+        draw.line([(70, 460), (70, 420)], fill=c, width=4)
+
+        # bottom right
+        draw.line([(1210, 460), (1170, 460)], fill=c, width=4)
+        draw.line([(1210, 460), (1210, 420)], fill=c, width=4)
+
+        # =========================
         # FONTS
-        # ======================
+        # =========================
 
         title_font = ImageFont.truetype(
             FONT_BOLD,
-            34
+            50
+        )
+
+        medium_font = ImageFont.truetype(
+            FONT_BOLD,
+            28
         )
 
         small_font = ImageFont.truetype(
             FONT_REGULAR,
-            20
+            22
         )
 
-        # ======================
-        # TITLE
-        # ======================
+        # =========================
+        # ARTIST
+        # =========================
 
         draw.text(
-            (
-                card_x + 120,
-                card_y + 310
-            ),
+            (100, 365),
+            "Artist",
+            font=small_font,
+            fill=(210, 210, 210)
+        )
+
+        draw.text(
+            (100, 400),
+            channel[:15],
+            font=medium_font,
+            fill="white"
+        )
+
+        # =========================
+        # VIEWS
+        # =========================
+
+        draw.text(
+            (560, 365),
+            "Views",
+            font=small_font,
+            fill=(210, 210, 210)
+        )
+
+        draw.text(
+            (560, 400),
+            views,
+            font=medium_font,
+            fill="white"
+        )
+
+        # =========================
+        # BRAND
+        # =========================
+
+        draw.text(
+            (1010, 390),
+            "Void x Music",
+            font=medium_font,
+            fill=(255, 220, 220)
+        )
+
+        # =========================
+        # SONG TITLE
+        # =========================
+
+        draw.text(
+            (540, 500),
             title,
             font=title_font,
-            fill="black"
+            fill=(40, 0, 0)
         )
 
-        # ======================
-        # META
-        # ======================
+        # =========================
+        # WAVEFORM
+        # =========================
 
-        draw.text(
-            (
-                card_x + 120,
-                card_y + 360
-            ),
-            f"YouTube | {views} views",
-            font=small_font,
-            fill=(30, 30, 30)
-        )
+        wave_y = 570
 
-        # ======================
+        for x in range(100, 1030, 10):
+
+            h = random.randint(10, 45)
+
+            draw.line(
+                [
+                    (x, wave_y - h // 2),
+                    (x, wave_y + h // 2)
+                ],
+                fill=(80, 0, 0),
+                width=4
+            )
+
+        # =========================
         # PROGRESS BAR
-        # ======================
+        # =========================
 
-        line_y = card_y + 420
+        line_y = 620
 
         draw.line(
-            (
-                card_x + 130,
-                line_y,
-                card_x + 610,
-                line_y
-            ),
-            fill=(120, 120, 120),
-            width=5
+            [(100, line_y), (1150, line_y)],
+            fill=(80, 20, 20),
+            width=6
         )
 
         draw.line(
-            (
-                card_x + 130,
-                line_y,
-                card_x + 410,
-                line_y
-            ),
-            fill="red",
-            width=6
+            [(100, line_y), (420, line_y)],
+            fill=(120, 0, 0),
+            width=7
         )
 
         draw.ellipse(
             (
-                card_x + 400,
+                410,
                 line_y - 10,
-                card_x + 420,
+                430,
                 line_y + 10
             ),
-            fill="red"
+            fill=(50, 0, 0)
         )
 
-        # ======================
-        # TIMESTAMP
-        # ======================
+        # =========================
+        # TIME
+        # =========================
 
         draw.text(
-            (
-                card_x + 120,
-                card_y + 445
-            ),
+            (100, 640),
             "00:00",
             font=small_font,
-            fill="black"
+            fill=(40, 0, 0)
         )
 
         draw.text(
-            (
-                card_x + 550,
-                card_y + 445
-            ),
+            (1110, 640),
             duration,
             font=small_font,
-            fill="black"
+            fill=(40, 0, 0)
         )
 
-        # ======================
+        # =========================
+        # CONTROLS
+        # =========================
+
+        draw.text(
+            (500, 675),
+            "◀",
+            font=title_font,
+            fill=(40, 0, 0)
+        )
+
+        draw.text(
+            (610, 665),
+            "⏸",
+            font=title_font,
+            fill=(40, 0, 0)
+        )
+
+        draw.text(
+            (730, 675),
+            "▶",
+            font=title_font,
+            fill=(40, 0, 0)
+        )
+
+        # =========================
+        # REQUESTED BY
+        # =========================
+
+        draw.text(
+            (500, 735),
+            "Requested by : KATIL",
+            font=medium_font,
+            fill=(40, 0, 0)
+        )
+
+        # =========================
         # SAVE
-        # ======================
+        # =========================
 
         output = CACHE_DIR / f"{videoid}_final.png"
 
         canvas.save(output)
 
-        # ======================
+        # =========================
         # DELETE TEMP
-        # ======================
+        # =========================
 
         try:
             os.remove(thumb_path)
@@ -320,9 +431,7 @@ async def gen_thumb(videoid: str):
 
     except Exception as e:
 
-        print(
-            f"[THUMB ERROR] {e}"
-        )
+        print(f"[THUMB ERROR] {e}")
 
         traceback.print_exc()
 
