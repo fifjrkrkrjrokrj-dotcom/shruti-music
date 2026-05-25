@@ -1,130 +1,329 @@
+# Copyright (c) 2025 Nand Yaduwanshi <NoxxOP>
+
 import os
 import aiohttp
 import aiofiles
-from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageEnhance
+import traceback
 
-CACHE_DIR = "cache"
-os.makedirs(CACHE_DIR, exist_ok=True)
+from pathlib import Path
+from PIL import (
+    Image,
+    ImageDraw,
+    ImageFilter,
+    ImageFont,
+    ImageEnhance
+)
 
-FONT_BOLD = "ShrutiMusic/assets/font3.ttf"
-FONT_REGULAR = "ShrutiMusic/assets/font2.ttf"
+from py_yt import VideosSearch
+
+# ======================
+# CACHE
+# ======================
+
+CACHE_DIR = Path("cache")
+CACHE_DIR.mkdir(exist_ok=True)
+
+# ======================
+# SIZE
+# ======================
 
 CANVAS_W = 1280
 CANVAS_H = 720
 
-async def gen_thumb(videoid, thumburl):
+# ======================
+# FONTS
+# ======================
 
-    thumb_path = f"{CACHE_DIR}/{videoid}.jpg"
+FONT_BOLD = "ShrutiMusic/assets/font3.ttf"
+FONT_REGULAR = "ShrutiMusic/assets/font2.ttf"
 
-    # ===== DOWNLOAD THUMB =====
+# ======================
+# THUMBNAIL GENERATOR
+# ======================
 
-    async with aiohttp.ClientSession() as session:
-        async with session.get(thumburl) as resp:
-            if resp.status == 200:
-                async with aiofiles.open(thumb_path, "wb") as f:
-                    await f.write(await resp.read())
+async def gen_thumb(videoid: str):
 
-    # ===== OPEN IMAGE =====
+    try:
 
-    base = Image.open(thumb_path).convert("RGB")
+        # ======================
+        # YOUTUBE DETAILS
+        # ======================
 
-    # ===== BG =====
+        url = f"https://www.youtube.com/watch?v={videoid}"
 
-    bg = base.resize((CANVAS_W, CANVAS_H))
-    bg = bg.filter(ImageFilter.GaussianBlur(18))
-    bg = ImageEnhance.Brightness(bg).enhance(0.45)
+        results = VideosSearch(url, limit=1)
 
-    canvas = bg.convert("RGBA")
+        result = (await results.next())["result"][0]
 
-    # ===== GLASS CARD =====
+        title = result.get(
+            "title",
+            "Unknown Song"
+        )[:30]
 
-    overlay = Image.new("RGBA", (CANVAS_W, CANVAS_H), (0, 0, 0, 0))
-    odraw = ImageDraw.Draw(overlay)
+        duration = result.get(
+            "duration",
+            "2:30"
+        )
 
-    card_x = 260
-    card_y = 120
-    card_w = 760
-    card_h = 480
+        views = result.get(
+            "viewCount",
+            {}
+        ).get(
+            "short",
+            "60K"
+        )
 
-    odraw.rounded_rectangle(
-        (card_x, card_y, card_x + card_w, card_y + card_h),
-        radius=35,
-        fill=(255, 255, 255, 180)
-    )
+        thumburl = result["thumbnails"][0]["url"].split("?")[0]
 
-    overlay = overlay.filter(ImageFilter.GaussianBlur(2))
+        # ======================
+        # DOWNLOAD THUMB
+        # ======================
 
-    canvas = Image.alpha_composite(canvas, overlay)
+        thumb_path = CACHE_DIR / f"{videoid}.jpg"
 
-    draw = ImageDraw.Draw(canvas)
+        async with aiohttp.ClientSession() as session:
 
-    # ===== THUMB =====
+            async with session.get(thumburl) as resp:
 
-    thumb = base.resize((540, 240))
+                if resp.status == 200:
 
-    mask = Image.new("L", thumb.size, 0)
-    mdraw = ImageDraw.Draw(mask)
+                    async with aiofiles.open(
+                        thumb_path,
+                        "wb"
+                    ) as f:
 
-    mdraw.rounded_rectangle(
-        (0, 0, thumb.size[0], thumb.size[1]),
-        radius=22,
-        fill=255
-    )
+                        await f.write(
+                            await resp.read()
+                        )
 
-    thumb_x = card_x + 110
-    thumb_y = card_y + 40
+        # ======================
+        # OPEN IMAGE
+        # ======================
 
-    canvas.paste(thumb, (thumb_x, thumb_y), mask)
+        base = Image.open(
+            thumb_path
+        ).convert("RGB")
 
-    # ===== FONTS =====
+        # ======================
+        # BACKGROUND
+        # ======================
 
-    title_font = ImageFont.truetype(FONT_BOLD, 34)
-    small_font = ImageFont.truetype(FONT_REGULAR, 20)
+        bg = base.resize(
+            (CANVAS_W, CANVAS_H)
+        )
 
-    # ===== TEXT =====
+        bg = bg.filter(
+            ImageFilter.GaussianBlur(18)
+        )
 
-    draw.text(
-        (card_x + 120, card_y + 310),
-        "Now Playing",
-        font=title_font,
-        fill="black"
-    )
+        bg = ImageEnhance.Brightness(
+            bg
+        ).enhance(0.45)
 
-    draw.text(
-        (card_x + 120, card_y + 360),
-        "YouTube Music",
-        font=small_font,
-        fill=(30, 30, 30)
-    )
+        canvas = bg.convert("RGBA")
 
-    # ===== BAR =====
+        # ======================
+        # GLASS CARD
+        # ======================
 
-    line_y = card_y + 420
+        overlay = Image.new(
+            "RGBA",
+            (CANVAS_W, CANVAS_H),
+            (0, 0, 0, 0)
+        )
 
-    draw.line(
-        (card_x + 130, line_y, card_x + 610, line_y),
-        fill=(120, 120, 120),
-        width=5
-    )
+        odraw = ImageDraw.Draw(overlay)
 
-    draw.line(
-        (card_x + 130, line_y, card_x + 410, line_y),
-        fill="red",
-        width=6
-    )
+        card_x = 260
+        card_y = 120
+        card_w = 760
+        card_h = 480
 
-    draw.ellipse(
-        (
-            card_x + 400,
-            line_y - 10,
-            card_x + 420,
-            line_y + 10
-        ),
-        fill="red"
-    )
+        odraw.rounded_rectangle(
+            (
+                card_x,
+                card_y,
+                card_x + card_w,
+                card_y + card_h
+            ),
+            radius=35,
+            fill=(255, 255, 255, 180)
+        )
 
-    output = f"{CACHE_DIR}/{videoid}_final.png"
+        overlay = overlay.filter(
+            ImageFilter.GaussianBlur(2)
+        )
 
-    canvas.save(output)
+        canvas = Image.alpha_composite(
+            canvas,
+            overlay
+        )
 
-    return output
+        draw = ImageDraw.Draw(canvas)
+
+        # ======================
+        # THUMB IMAGE
+        # ======================
+
+        thumb = base.resize((540, 240))
+
+        mask = Image.new(
+            "L",
+            thumb.size,
+            0
+        )
+
+        mdraw = ImageDraw.Draw(mask)
+
+        mdraw.rounded_rectangle(
+            (
+                0,
+                0,
+                thumb.size[0],
+                thumb.size[1]
+            ),
+            radius=22,
+            fill=255
+        )
+
+        thumb_x = card_x + 110
+        thumb_y = card_y + 40
+
+        canvas.paste(
+            thumb,
+            (thumb_x, thumb_y),
+            mask
+        )
+
+        # ======================
+        # FONTS
+        # ======================
+
+        title_font = ImageFont.truetype(
+            FONT_BOLD,
+            34
+        )
+
+        small_font = ImageFont.truetype(
+            FONT_REGULAR,
+            20
+        )
+
+        # ======================
+        # TITLE
+        # ======================
+
+        draw.text(
+            (
+                card_x + 120,
+                card_y + 310
+            ),
+            title,
+            font=title_font,
+            fill="black"
+        )
+
+        # ======================
+        # META
+        # ======================
+
+        draw.text(
+            (
+                card_x + 120,
+                card_y + 360
+            ),
+            f"YouTube | {views} views",
+            font=small_font,
+            fill=(30, 30, 30)
+        )
+
+        # ======================
+        # PROGRESS BAR
+        # ======================
+
+        line_y = card_y + 420
+
+        draw.line(
+            (
+                card_x + 130,
+                line_y,
+                card_x + 610,
+                line_y
+            ),
+            fill=(120, 120, 120),
+            width=5
+        )
+
+        draw.line(
+            (
+                card_x + 130,
+                line_y,
+                card_x + 410,
+                line_y
+            ),
+            fill="red",
+            width=6
+        )
+
+        draw.ellipse(
+            (
+                card_x + 400,
+                line_y - 10,
+                card_x + 420,
+                line_y + 10
+            ),
+            fill="red"
+        )
+
+        # ======================
+        # TIMESTAMP
+        # ======================
+
+        draw.text(
+            (
+                card_x + 120,
+                card_y + 445
+            ),
+            "00:00",
+            font=small_font,
+            fill="black"
+        )
+
+        draw.text(
+            (
+                card_x + 550,
+                card_y + 445
+            ),
+            duration,
+            font=small_font,
+            fill="black"
+        )
+
+        # ======================
+        # SAVE
+        # ======================
+
+        output = CACHE_DIR / f"{videoid}_final.png"
+
+        canvas.save(output)
+
+        # ======================
+        # DELETE TEMP
+        # ======================
+
+        try:
+            os.remove(thumb_path)
+        except:
+            pass
+
+        return str(output)
+
+    except Exception as e:
+
+        print(
+            f"[THUMB ERROR] {e}"
+        )
+
+        traceback.print_exc()
+
+        return None
