@@ -43,7 +43,7 @@ BOT_NAME = "KATIL MUSIC"
 # THUMB GENERATOR
 # =====================================
 
-async def gen_thumb(videoid: str, user_name="KATIL"):
+async def gen_thumb(videoid: str):
 
     try:
 
@@ -197,19 +197,19 @@ async def gen_thumb(videoid: str, user_name="KATIL"):
 
         c = (255, 255, 255)
 
-        # TL
+        # TOP LEFT
         draw.line([(180, 100), (300, 100)], fill=c, width=8)
         draw.line([(180, 100), (180, 220)], fill=c, width=8)
 
-        # TR
+        # TOP RIGHT
         draw.line([(3660, 100), (3540, 100)], fill=c, width=8)
         draw.line([(3660, 100), (3660, 220)], fill=c, width=8)
 
-        # BL
+        # BOTTOM LEFT
         draw.line([(180, 1280), (300, 1280)], fill=c, width=8)
         draw.line([(180, 1280), (180, 1160)], fill=c, width=8)
 
-        # BR
+        # BOTTOM RIGHT
         draw.line([(3660, 1280), (3540, 1280)], fill=c, width=8)
         draw.line([(3660, 1280), (3660, 1160)], fill=c, width=8)
 
@@ -217,14 +217,9 @@ async def gen_thumb(videoid: str, user_name="KATIL"):
         # FONTS
         # =====================================
 
-        title_font = ImageFont.truetype(
-            FONT_BOLD,
-            120
-        )
-
         medium_font = ImageFont.truetype(
             FONT_BOLD,
-            75
+            85
         )
 
         small_font = ImageFont.truetype(
@@ -236,15 +231,10 @@ async def gen_thumb(videoid: str, user_name="KATIL"):
         # BOT NAME
         # =====================================
 
-        bot_width = draw.textlength(
-            BOT_NAME,
-            font=medium_font
-        )
-
         draw.text(
             (
-                3200 - bot_width,
-                1040
+                2950,
+                1020
             ),
             BOT_NAME,
             font=medium_font,
@@ -278,7 +268,7 @@ async def gen_thumb(videoid: str, user_name="KATIL"):
 
         draw.line(
             [(300, line_y), (3450, line_y)],
-            fill=(150, 150, 150),
+            fill=(140, 140, 140),
             width=14
         )
 
@@ -313,54 +303,6 @@ async def gen_thumb(videoid: str, user_name="KATIL"):
             (3250, 1940),
             duration,
             font=small_font,
-            fill="white"
-        )
-
-        # =====================================
-        # CONTROLS
-        # =====================================
-
-        control_font = ImageFont.truetype(
-            FONT_BOLD,
-            130
-        )
-
-        draw.text(
-            (1450, 1980),
-            "⏮",
-            font=control_font,
-            fill="white"
-        )
-
-        draw.text(
-            (1820, 1960),
-            "⏸",
-            font=control_font,
-            fill="white"
-        )
-
-        draw.text(
-            (2200, 1980),
-            "⏭",
-            font=control_font,
-            fill="white"
-        )
-
-        # =====================================
-        # REQUESTED BY
-        # =====================================
-
-        req_font = ImageFont.truetype(
-            FONT_BOLD,
-            70
-        )
-
-        req_text = f"Requested by : {user_name}"
-
-        draw.text(
-            (300, 1040),
-            req_text,
-            font=req_font,
             fill="white"
         )
 
