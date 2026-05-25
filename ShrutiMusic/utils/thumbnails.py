@@ -1,19 +1,34 @@
-from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageEnhance
 import os
+import aiohttp
+import aiofiles
+from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageEnhance
 
-CANVAS_W = 1280
-CANVAS_H = 720
+CACHE_DIR = "cache"
+os.makedirs(CACHE_DIR, exist_ok=True)
 
 FONT_BOLD = "ShrutiMusic/assets/font3.ttf"
 FONT_REGULAR = "ShrutiMusic/assets/font2.ttf"
 
-async def gen_thumb(videoid: str):
+CANVAS_W = 1280
+CANVAS_H = 720
 
-    thumb_path = f"cache/{videoid}.png"
+async def gen_thumb(videoid, thumburl):
+
+    thumb_path = f"{CACHE_DIR}/{videoid}.jpg"
+
+    # ===== DOWNLOAD THUMB =====
+
+    async with aiohttp.ClientSession() as session:
+        async with session.get(thumburl) as resp:
+            if resp.status == 200:
+                async with aiofiles.open(thumb_path, "wb") as f:
+                    await f.write(await resp.read())
+
+    # ===== OPEN IMAGE =====
 
     base = Image.open(thumb_path).convert("RGB")
 
-    # ===== BACKGROUND =====
+    # ===== BG =====
 
     bg = base.resize((CANVAS_W, CANVAS_H))
     bg = bg.filter(ImageFilter.GaussianBlur(18))
@@ -24,14 +39,14 @@ async def gen_thumb(videoid: str):
     # ===== GLASS CARD =====
 
     overlay = Image.new("RGBA", (CANVAS_W, CANVAS_H), (0, 0, 0, 0))
-    draw_overlay = ImageDraw.Draw(overlay)
+    odraw = ImageDraw.Draw(overlay)
 
     card_x = 260
     card_y = 120
     card_w = 760
     card_h = 480
 
-    draw_overlay.rounded_rectangle(
+    odraw.rounded_rectangle(
         (card_x, card_y, card_x + card_w, card_y + card_h),
         radius=35,
         fill=(255, 255, 255, 180)
@@ -43,49 +58,46 @@ async def gen_thumb(videoid: str):
 
     draw = ImageDraw.Draw(canvas)
 
-    # ===== THUMB IMAGE =====
+    # ===== THUMB =====
 
     thumb = base.resize((540, 240))
 
-    thumb_x = card_x + 110
-    thumb_y = card_y + 40
-
     mask = Image.new("L", thumb.size, 0)
-    mask_draw = ImageDraw.Draw(mask)
+    mdraw = ImageDraw.Draw(mask)
 
-    mask_draw.rounded_rectangle(
+    mdraw.rounded_rectangle(
         (0, 0, thumb.size[0], thumb.size[1]),
         radius=22,
         fill=255
     )
+
+    thumb_x = card_x + 110
+    thumb_y = card_y + 40
 
     canvas.paste(thumb, (thumb_x, thumb_y), mask)
 
     # ===== FONTS =====
 
     title_font = ImageFont.truetype(FONT_BOLD, 34)
-    small_font = ImageFont.truetype(FONT_BOLD, 20)
-    tiny_font = ImageFont.truetype(FONT_REGULAR, 18)
+    small_font = ImageFont.truetype(FONT_REGULAR, 20)
 
-    # ===== TITLE =====
+    # ===== TEXT =====
 
     draw.text(
         (card_x + 120, card_y + 310),
-        "Bairan Banjaare Lyrics Video",
+        "Now Playing",
         font=title_font,
         fill="black"
     )
 
-    # ===== META =====
-
     draw.text(
-        (card_x + 120, card_y + 365),
-        "YouTube | 60K views",
+        (card_x + 120, card_y + 360),
+        "YouTube Music",
         font=small_font,
-        fill=(20, 20, 20)
+        fill=(30, 30, 30)
     )
 
-    # ===== PROGRESS BAR =====
+    # ===== BAR =====
 
     line_y = card_y + 420
 
@@ -111,25 +123,7 @@ async def gen_thumb(videoid: str):
         fill="red"
     )
 
-    # ===== TIMESTAMP =====
-
-    draw.text(
-        (card_x + 120, card_y + 445),
-        "00:00",
-        font=small_font,
-        fill="black"
-    )
-
-    draw.text(
-        (card_x + 550, card_y + 445),
-        "2:30",
-        font=small_font,
-        fill="black"
-    )
-
-    # ===== SAVE =====
-
-    output = f"cache/{videoid}_final.png"
+    output = f"{CACHE_DIR}/{videoid}_final.png"
 
     canvas.save(output)
 
