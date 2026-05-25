@@ -46,18 +46,18 @@ STRING5 = os.getenv("STRING_SESSION5", None)
 
 AUTO_LEAVING_ASSISTANT = bool(os.getenv("AUTO_LEAVING_ASSISTANT", False))
 
-START_IMG_URL = os.getenv("START_IMG_URL", "https://files.catbox.moe/7q8bfg.jpg")
-PING_IMG_URL = "https://files.catbox.moe/eehxb4.jpg"
-PLAYLIST_IMG_URL = "https://files.catbox.moe/eehxb4.jpg"
-STATS_IMG_URL = "https://files.catbox.moe/eehxb4.jpg"
-TELEGRAM_AUDIO_URL = "https://files.catbox.moe/eehxb4.jpg"
-TELEGRAM_VIDEO_URL = "https://files.catbox.moe/eehxb4.jpg"
-STREAM_IMG_URL = "https://files.catbox.moe/eehxb4.jpg"
-SOUNCLOUD_IMG_URL = "https://files.catbox.moe/eehxb4.jpg"
-YOUTUBE_IMG_URL = "https://files.catbox.moe/eehxb4.jpg"
-SPOTIFY_ARTIST_IMG_URL = "https://files.catbox.moe/eehxb4.jpg"
-SPOTIFY_ALBUM_IMG_URL = "https://files.catbox.moe/eehxb4.jpg"
-SPOTIFY_PLAYLIST_IMG_URL = "https://files.catbox.moe/eehxb4.jpg"
+START_IMG_URL = os.getenv("START_IMG_URL", "https://files.catbox.moe/4v1tel.jpg")
+PING_IMG_URL = "https://files.catbox.moe/pvmze9.jpg"
+PLAYLIST_IMG_URL = "https://files.catbox.moe/d87zj0.jpg"
+STATS_IMG_URL = "https://files.catbox.moe/i691sk.jpg"
+TELEGRAM_AUDIO_URL = "https://files.catbox.moe/l6mbl9.jpg"
+TELEGRAM_VIDEO_URL = "https://files.catbox.moe/knsvch.jpg"
+STREAM_IMG_URL = "https://files.catbox.moe/h9h969.jpg"
+SOUNCLOUD_IMG_URL = "https://files.catbox.moe/00g95q.jpg"
+YOUTUBE_IMG_URL = "https://files.catbox.moe/p46q1g.jpg"
+SPOTIFY_ARTIST_IMG_URL = "https://files.catbox.moe/p46q1g.jpg"
+SPOTIFY_ALBUM_IMG_URL = "https://files.catbox.moe/p46q1g.jpg"
+SPOTIFY_PLAYLIST_IMG_URL = "https://files.catbox.moe/p46q1g.jpg"
 
 BANNED_USERS = filters.user()
 adminlist = {}
